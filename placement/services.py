@@ -56,7 +56,9 @@ def verify_offer(user, offer):
     if not access.students(user).filter(pk=offer.student_id).exists(): raise PermissionDenied
     student = Student.objects.select_for_update().get(pk=offer.student_id)
     if not access.students(user).filter(pk=student.pk).exists(): raise PermissionDenied
-    offer = Offer.objects.select_for_update().select_related('drive').get(pk=offer.pk)
+    # Lock only the offer row. The optional drive would require an outer join,
+    # whose nullable side PostgreSQL cannot lock with FOR UPDATE.
+    offer = Offer.objects.select_for_update().get(pk=offer.pk)
     if offer.verified or offer.withdrawn: raise ValidationError('Offer is already verified or withdrawn.')
     if offer.drive:
         if offer.company_id != offer.drive.company_id or offer.offer_type != offer.drive.offer_type:

@@ -226,6 +226,18 @@ class AuthorizationTests(Fixtures):
         self.assertTrue(AuditEvent.objects.filter(action='export.students').exists())
 
 class WorkflowTests(Fixtures):
+    def test_off_campus_offer_can_be_verified_without_a_drive(self):
+        item=services.submit_offer(self.user,self.student,{
+            'company':self.company,'drive':None,'offer_type':'F','ctc':'12',
+            'issued_at':timezone.now(),'company_deadline':None,'off_campus':True,
+        })
+        services.verify_offer(self.officer,item)
+        item.refresh_from_db()
+        self.assertTrue(item.verified)
+        self.assertIsNone(item.drive_id)
+        self.assertEqual(item.decision['outcome'],'allowed')
+        self.assertTrue(AuditEvent.objects.filter(action='offer.verify',target=str(item.pk)).exists())
+
     def test_company_batch_and_switching_reports_are_scoped(self):
         from placement.reporting import institutional_report
         self.offer(ctc='10',acceptance='accepted')
