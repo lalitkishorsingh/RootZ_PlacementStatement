@@ -1,0 +1,105 @@
+x-app-environment: &app-environment
+  APP_ENV: ${APP_ENV:-production}
+  DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+  DATA_KEYS: ${DATA_KEYS}
+  AUDIT_KEY: ${AUDIT_KEY}
+  LOOKUP_KEY: ${LOOKUP_KEY}
+  ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+  CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS}
+  SITE_URL: ${SITE_URL}
+  DB_NAME: ${DB_NAME}
+  DB_HOST: db
+  DB_PORT: 5432
+  DB_USER: placement_app
+  DB_PASSWORD: ${DB_PASSWORD}
+  DB_SSLMODE: verify-full
+  DB_SSLROOTCERT: /run/postgres-tls/ca.crt
+  TRUST_PROXY: '1'
+  EMAIL_HOST: ${EMAIL_HOST}
+  EMAIL_PORT: ${EMAIL_PORT:-587}
+  EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+  EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+  DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
+  RETENTION_DAYS: ${RETENTION_DAYS:-0}
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: placement_owner
+      POSTGRES_PASSWORD: ${DB_OWNER_PASSWORD}
+      APP_DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./deploy/init-db.sh:/docker-entrypoint-initdb.d/10-runtime.sh:ro
+      - ${POSTGRES_TLS_DIR}:/run/postgres-tls:ro
+    command: [postgres, -c, ssl=on, -c, ssl_cert_file=/run/postgres-tls/server.crt, -c, ssl_key_file=/run/postgres-tls/server.key]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U placement_owner -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [database]
+    restart: unless-stopped
+  migrate:
+    build: .
+    environment:
+      <<: *app-environment
+      DB_USER: placement_owner
+      DB_PASSWORD: ${DB_OWNER_PASSWORD}
+    command: [sh, -c, 'python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py grant_runtime']
+    volumes:
+      - static-data:/app/staticfiles
+      - ${POSTGRES_TLS_DIR}/ca.crt:/run/postgres-tls/ca.crt:ro
+    depends_on:
+      db: {condition: service_healthy}
+    networks: [database]
+  web:
+    build: .
+    environment: *app-environment
+    volumes:
+      - static-data:/app/staticfiles:ro
+      - ${POSTGRES_TLS_DIR}/ca.crt:/run/postgres-tls/ca.crt:ro
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    networks: [database, frontend]
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+  scheduler:
+    build: .
+    environment: *app-environment
+    command: [sh, -c, 'while true; do python manage.py expire_offers && python manage.py verify_audit; sleep 60; done']
+    volumes:
+      - ${POSTGRES_TLS_DIR}/ca.crt:/run/postgres-tls/ca.crt:ro
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    networks: [database]
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+  proxy:
+    image: caddy:2-alpine
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST}
+    ports: ['80:80', '443:443']
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - static-data:/srv/static:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [web]
+    networks: [frontend]
+    restart: unless-stopped
+networks:
+  database: {internal: true}
+  frontend: {}
+volumes:
+  db-data: {}
+  static-data: {}
+  caddy-data: {}
+  caddy-config: {}

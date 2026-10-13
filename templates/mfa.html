@@ -1,0 +1,10 @@
+{% extends 'base.html' %}{% block content %}
+<p class="eyebrow">NFSU ACCOUNT SECURITY</p><h1>{{ title }}</h1>
+{% if navigation_locked %}<div class="notice"><strong>Finish this step to open your workspace.</strong><p>Your password was accepted. Student records, reports and other pages unlock after authenticator verification.</p></div>{% endif %}
+{% if enrolling %}
+<section class="panel mfa-setup"><h2>1. Add this account on your phone</h2><p>Open your authenticator app, choose <strong>Add account</strong>, then <strong>Scan QR code</strong>.</p><img class="mfa-qr" src="{{ qr_image }}" width="240" height="240" alt="QR code to enroll your NFSU Placement account in a time-based authenticator">
+<details><summary>Cannot scan? Enter a setup key instead</summary><p>Choose a <strong>time-based</strong> account (TOTP), name it <strong>NFSU Placement · {{ user.username }}</strong>, and enter this key:</p><code class="mfa-key">{{ secret }}</code></details><p class="muted">Keep this QR code and setup key private. They are used once to connect your authenticator.</p></section>
+{% else %}<p class="muted">Open the NFSU Placement account in the authenticator you connected earlier.</p>{% endif %}
+<form method="post" class="panel form-panel">{% csrf_token %}<h2>{% if enrolling %}2. Enter your six-digit code{% else %}Enter your six-digit code{% endif %}</h2><p class="muted">Your authenticator generates a new code every 30 seconds. Enter the current code below; the setup key is not the code.</p>{{ form.non_field_errors }}<div class="field">{{ form.code.label_tag }}{{ form.code }}{{ form.code.errors }}</div><button class="button">Verify code <span>→</span></button><p class="muted mfa-help">If a code is rejected, wait for the next one and make sure your phone's date and time are set automatically.</p></form>
+<p class="muted">{% if enrolling %}Administrator, officer and coordinator accounts require this extra step to protect student data.{% else %}Lost your authenticator? Contact your Placement Cell administrator for identity-verified recovery. A password reset does not remove this protection.{% endif %}</p>
+{% endblock %}

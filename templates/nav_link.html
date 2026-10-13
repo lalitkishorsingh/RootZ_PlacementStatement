@@ -1,0 +1,1 @@
+<a href="{% url route %}"{% if active_nav == route %} class="nav-active" aria-current="page"{% endif %}>{{ label }}{% if route == 'dashboard' %}<span aria-hidden="true">↗</span>{% endif %}</a>

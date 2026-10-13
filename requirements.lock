@@ -1,0 +1,20 @@
+# Runtime versions verified by pip-audit; refresh deliberately and re-run the tests.
+argon2-cffi==25.1.0
+argon2-cffi-bindings==26.1.0
+asgiref==3.12.1
+cffi==2.1.1
+colorama==0.4.6
+cryptography==50.0.2
+defusedxml==0.7.1
+django==5.2.18
+et-xmlfile==2.0.0
+openpyxl==3.1.5
+psycopg==3.3.6
+psycopg-binary==3.3.6
+pycparser==3.11
+pyotp==2.10.0
+python-dotenv==1.2.4
+qrcode==8.2
+sqlparse==0.6.0
+tzdata==2026.5
+waitress==3.0.2

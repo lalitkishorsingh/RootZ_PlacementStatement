@@ -1,0 +1,11 @@
+{$PUBLIC_HOST} {
+    handle_path /static/* {
+        root * /srv/static
+        file_server
+    }
+    handle {
+        reverse_proxy web:8000 {
+            header_up X-Forwarded-Proto https
+        }
+    }
+}

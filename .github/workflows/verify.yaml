@@ -1,0 +1,36 @@
+name: Quality and security
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: placement_test
+          POSTGRES_PASSWORD: isolated-ci-password
+          POSTGRES_DB: placement_test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 10
+    env:
+      DB_HOST: 127.0.0.1
+      DB_NAME: placement_test
+      DB_USER: placement_test
+      DB_PASSWORD: isolated-ci-password
+      DB_SSLMODE: disable
+      BROWSER_CHANNEL: chromium
+      RUN_BROWSER_TESTS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.13'}
+      - run: pip install -r requirements-dev.txt
+      - run: python scripts/setup_local.py
+      - run: python -m playwright install --with-deps chromium
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py test placement.tests --verbosity 2
+      - run: pip-audit -r requirements.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: browser-evidence, path: artifacts/}

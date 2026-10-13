@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block content %}<h1>{{ title }}</h1><div class="panel"><p>{{ description }}</p><form method="post">{% csrf_token %}<button class="button">{{ submit }}</button></form></div>{% endblock %}

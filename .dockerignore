@@ -1,0 +1,11 @@
+.venv
+.git
+.env
+.env.*
+*.sqlite3*
+.local-mail
+.local-demo-accounts.json
+artifacts
+backups
+test-results
+__pycache__

@@ -1,0 +1,31 @@
+{% load static %}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{% block title %}Placement Cell · NFSU{% endblock %}</title><link rel="icon" type="image/png" href="{% static 'branding/nfsu-logo.png' %}"><link rel="stylesheet" href="{% static 'app.css' %}"><link rel="stylesheet" href="{% static 'mfa.css' %}"><link rel="stylesheet" href="{% static 'branding/nfsu-theme.css' %}"><link rel="stylesheet" href="{% static 'ui.css' %}"></head>
+<body><a class="skip" href="#content">Skip to content</a>
+{% if user.is_authenticated and not auth_page and not navigation_locked %}
+<aside class="sidebar"><a class="brand nfsu-brand" href="{% url 'dashboard' %}"><img class="nfsu-logo" src="{% static 'branding/nfsu-logo.png' %}" width="300" height="101" alt="National Forensic Sciences University official logo"><span class="brand-sub">PLACEMENT CELL</span></a>
+<div class="session-label">ACADEMIC SESSION <strong>2026 — 27</strong></div>
+<nav aria-label="Main navigation">
+{% include 'nav_link.html' with route='dashboard' label='Overview' %}
+{% if user.role == 'student' %}{% include 'nav_link.html' with route='students' label='My student record' %}{% else %}{% include 'nav_link.html' with route='students' label='Student directory' %}{% endif %}
+{% include 'nav_link.html' with route='drives' label='Recruitment drives' %}
+{% include 'nav_link.html' with route='applications' label='Applications' %}
+{% include 'nav_link.html' with route='offers' label='Offers & outcomes' %}
+{% if user.role != 'recruiter' %}{% include 'nav_link.html' with route='reviews' label='Review cases' %}{% endif %}
+{% if user.role == 'admin' or user.role == 'officer' or user.role == 'coordinator' %}<div class="nav-label">OPERATIONS</div>
+{% include 'nav_link.html' with route='companies' label='Recruiting organizations' %}
+{% include 'nav_link.html' with route='reports' label='Placement reports' %}
+{% include 'nav_link.html' with route='import' label='Import records' %}
+{% include 'nav_link.html' with route='export' label='Export reports' %}{% endif %}
+{% if user.role == 'admin' %}<div class="nav-label">GOVERNANCE</div>
+{% include 'nav_link.html' with route='accounts' label='Accounts & permissions' %}
+{% include 'nav_link.html' with route='policy' label='Placement policy' %}
+{% include 'nav_link.html' with route='audit' label='Audit trail' %}{% endif %}
+{% include 'nav_link.html' with route='mfa' label='Authenticator security' %}
+{% include 'nav_link.html' with route='reauth' label='Confirm identity' %}</nav>
+<div class="sidebar-foot"><span class="secure-dot"></span> Access controlled workspace<br><small>National Forensic Sciences University</small></div></aside>
+<div class="workspace"><header class="topbar"><div class="portal-label"><strong>Placement Cell</strong><span>Academic session 2026–27</span></div><a class="topbar-brand" href="{% url 'dashboard' %}" aria-label="NFSU placement overview"><img class="nfsu-logo" src="{% static 'branding/nfsu-logo.png' %}" width="300" height="101" alt="National Forensic Sciences University official logo"></a><div class="account-controls"><span class="role">{{ user.get_role_display }}</span><span class="account-name">{{ user.username }}</span><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="text-button">Sign out</button></form></div></header>
+{% else %}<div class="auth-shell"><header class="auth-brand"><div class="auth-identity"><img class="nfsu-logo" src="{% static 'branding/nfsu-logo.png' %}" width="300" height="101" alt="National Forensic Sciences University official logo"><small>STUDENT PLACEMENT MANAGEMENT · 2026–27</small></div>{% if user.is_authenticated %}<form method="post" action="{% url 'logout' %}" class="gate-signout">{% csrf_token %}<button class="text-button">Sign out</button></form>{% endif %}</header>{% endif %}
+<main id="content" class="{% if auth_page or navigation_locked %}auth-content{% else %}content{% endif %}">
+{% for message in messages %}<div class="message {{ message.tags }}" role="status">{{ message }}</div>{% endfor %}
+{% block content %}{% endblock %}
+</main><footer class="footer">NFSU Placement Cell · Session 2026–27 <span>Policy-based access · Audited workflows</span></footer></div></body></html>

@@ -1,0 +1,49 @@
+/* Navy and gold sampled from the official NFSU website CSS, 13 October 2026.
+   Source: https://nfsu.ac.in/assets/css/bundle.css. See docs/branding.md. */
+:root {
+  --navy: #002147;
+  --ink: #182e49;
+  --teal: #002147;
+  --muted: #5e6f85;
+  --line: #dce3eb;
+  --paper: #f5f7fa;
+  --gold: #ddb55e;
+}
+.nfsu-logo { display: block; max-width: 100%; height: auto; object-fit: contain; }
+.nfsu-brand { flex-direction: column; align-items: stretch; gap: 10px; }
+.nfsu-brand .nfsu-logo { width: 100%; padding: 10px; background: #fff; border-radius: 8px; }
+.nfsu-brand .brand-sub { color: var(--gold); text-align: center; font-size: 10px; letter-spacing: 2.4px; }
+.session-label { color: #b2c2d6; }
+.session-label strong { color: #fff; }
+nav a { color: #e2e9f3; }
+nav a:hover { background: #16375d; color: #ffe5a9; }
+.nav-label { color: var(--gold); }
+.sidebar-foot { color: #c0cddd; }
+.sidebar-foot small { color: #a7b9cf; }
+.secure-dot { background: var(--gold); }
+.topbar { border-bottom: 2px solid var(--gold); }
+.button { background: var(--gold); border-color: var(--gold); color: var(--navy); }
+.button:hover { background: #cda349; border-color: #cda349; color: var(--navy); }
+.button.secondary { background: #fff; border-color: var(--line); color: var(--navy); }
+.button.secondary:hover { background: #edf2f8; border-color: #bfcde0; }
+.metric.accent { background: #fff6e0; border-color: #ead49c; }
+.metric.accent > strong { color: var(--navy); }
+.company-initial { background: #edf2f8; color: var(--navy); }
+button:not(.button):not(.text-button) { color: var(--navy); background: #f3f6fb; }
+.auth-brand { border-bottom: 2px solid var(--gold); padding-bottom: 24px; }
+.auth-identity { min-width: 0; }
+.auth-identity .nfsu-logo { width: 360px; }
+.auth-identity small { color: var(--navy); font-size: 10px; letter-spacing: 1.3px; margin-top: 12px; }
+.auth-brand .gate-signout { flex-shrink: 0; }
+@media (max-width: 850px) {
+  .nfsu-brand { flex-direction: row; align-items: center; justify-content: flex-start; gap: 18px; }
+  .nfsu-brand .nfsu-logo { width: 175px; padding: 7px; }
+  .nfsu-brand .brand-sub { text-align: left; font-size: 9px; letter-spacing: 1.6px; }
+  .auth-identity .nfsu-logo { width: 235px; }
+  .auth-identity small { font-size: 8px; letter-spacing: .5px; }
+}
+@media (max-width: 360px) {
+  .auth-identity .nfsu-logo { width: 200px; }
+  .nfsu-brand { gap: 10px; }
+  .nfsu-brand .nfsu-logo { width: 155px; }
+}
