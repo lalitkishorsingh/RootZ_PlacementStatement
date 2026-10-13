@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from unittest import skipUnless
-from django.db import connection, close_old_connections
+from django.db import connection, connections, close_old_connections
 from django.test import TransactionTestCase
 from django.utils import timezone
 from django.core.exceptions import ValidationError
@@ -29,7 +29,11 @@ class ConcurrencyTests(TransactionTestCase):
                 verify_offer(User.objects.get(pk=actor.pk),Offer.objects.get(pk=pk))
                 return 'verified'
             except ValidationError: return 'blocked'
-            finally: close_old_connections()
+            finally:
+                # These are worker-thread connections. With persistent connections,
+                # close_old_connections() leaves fresh sessions open after the thread
+                # exits, preventing the test runner from dropping its PostgreSQL DB.
+                connections.close_all()
         with ThreadPoolExecutor(max_workers=2) as pool: outcomes=list(pool.map(worker,[o.pk for o in offers]))
         self.assertCountEqual(outcomes,['verified','blocked'])
         self.assertEqual(Offer.objects.filter(verified=True).count(),1)
